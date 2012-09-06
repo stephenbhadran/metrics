@@ -101,7 +101,15 @@ class InstrumentedResourceMethodDispatchProvider implements ResourceMethodDispat
             return null;
         }
 
-        if (method.getMethod().isAnnotationPresent(Timed.class)) {
+        if (method.getDeclaringResource().getResourceClass().isAnnotationPresent(Timed.class)) {
+            final Timed annotation = method.getDeclaringResource().getResourceClass().getAnnotation(Timed.class);
+            final MetricName name = MetricName.forTimedMethod(method.getDeclaringResource()
+                                                                    .getResourceClass(),
+                                                              method.getMethod(),
+                                                              annotation);
+            final Timer timer = registry.newTimer(name, annotation.durationUnit(), annotation.rateUnit());
+            dispatcher = new TimedRequestDispatcher(dispatcher, timer);
+        } else if (method.getMethod().isAnnotationPresent(Timed.class)) {
             final Timed annotation = method.getMethod().getAnnotation(Timed.class);
             final MetricName name = MetricName.forTimedMethod(method.getDeclaringResource()
                                                                     .getResourceClass(),
@@ -111,7 +119,15 @@ class InstrumentedResourceMethodDispatchProvider implements ResourceMethodDispat
             dispatcher = new TimedRequestDispatcher(dispatcher, timer);
         }
 
-        if (method.getMethod().isAnnotationPresent(Metered.class)) {
+        if (method.getDeclaringResource().getResourceClass().isAnnotationPresent(Metered.class)) {
+        	final Metered annotation = method.getDeclaringResource().getResourceClass().getAnnotation(Metered.class);
+            final MetricName name = MetricName.forMeteredMethod(method.getDeclaringResource()
+                                                                      .getResourceClass(),
+                                                                method.getMethod(),
+                                                                annotation);
+            final Meter meter = registry.newMeter(name, annotation.eventType(), annotation.rateUnit());
+            dispatcher = new MeteredRequestDispatcher(dispatcher, meter);
+        } else if (method.getMethod().isAnnotationPresent(Metered.class)) {
             final Metered annotation = method.getMethod().getAnnotation(Metered.class);
             final MetricName name = MetricName.forMeteredMethod(method.getDeclaringResource()
                                                                       .getResourceClass(),
@@ -121,7 +137,15 @@ class InstrumentedResourceMethodDispatchProvider implements ResourceMethodDispat
             dispatcher = new MeteredRequestDispatcher(dispatcher, meter);
         }
 
-        if (method.getMethod().isAnnotationPresent(ExceptionMetered.class)) {
+        if (method.getDeclaringResource().getResourceClass().isAnnotationPresent(ExceptionMetered.class)) {
+            final ExceptionMetered annotation = method.getDeclaringResource().getResourceClass().getAnnotation(ExceptionMetered.class);
+            final MetricName name = MetricName.forExceptionMeteredMethod(method.getDeclaringResource()
+                                                                               .getResourceClass(),
+                                                                         method.getMethod(),
+                                                                         annotation);
+            final Meter meter = registry.newMeter(name, annotation.eventType(), annotation.rateUnit());
+            dispatcher = new ExceptionMeteredRequestDispatcher(dispatcher, meter, annotation.cause());
+        } else if (method.getMethod().isAnnotationPresent(ExceptionMetered.class)) {
             final ExceptionMetered annotation = method.getMethod().getAnnotation(ExceptionMetered.class);
             final MetricName name = MetricName.forExceptionMeteredMethod(method.getDeclaringResource()
                                                                                .getResourceClass(),

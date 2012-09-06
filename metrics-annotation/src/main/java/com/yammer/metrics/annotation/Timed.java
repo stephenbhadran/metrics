@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * {@code #fancyName(String)} method is invoked, the method's execution will be timed.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Timed {
     /**
      * The group of the timer.
@@ -42,10 +42,10 @@ public @interface Timed {
     /**
      * The time unit of the timer's rate.
      */
-    TimeUnit rateUnit() default TimeUnit.SECONDS;
+	TimeUnit rateUnit() default TimeUnit.SECONDS;
 
-    /**
-     * The time unit of the timer's duration.
-     */
-    TimeUnit durationUnit() default TimeUnit.MILLISECONDS;
+	/**
+	 * The time unit of the timer's duration.
+	 */
+	TimeUnit durationUnit() default TimeUnit.MILLISECONDS;
 }
